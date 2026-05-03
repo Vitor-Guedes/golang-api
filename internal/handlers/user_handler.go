@@ -10,6 +10,8 @@ import (
 	"golang-crud/internal/database"
 	"golang-crud/internal/models"
 
+	"golang-crud/pkg/paginate"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -98,15 +100,10 @@ func DeleteUser(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "User Deleted!"})
 }
 
-type SearchRequest struct {
-	Limit int `json:limit`
-	Page  int `json:page`
-}
-
 func PaginateUser(context *gin.Context) {
 	var users []models.User
 
-	var searchRequest SearchRequest
+	var searchRequest paginate.SearchRequest
 
 	// Recebe o json da requisicao. E converte o json em struct GO
 	if err := context.ShouldBindJSON(&searchRequest); err != nil {
@@ -117,12 +114,16 @@ func PaginateUser(context *gin.Context) {
 		return
 	}
 
-	// condition := fmt.Sprintf("%s %s ?", "status", "=")
+	// Aplica o filtro de busca
+	result, err := searchRequest.Apply(&users)
 
-	offset := (searchRequest.Page - 1) * searchRequest.Limit
-    database.DB.Offset(offset)
-		.Limit(searchRequest.Limit)
-		.Find(&users)
+	// Valida se tem algum erro
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 
-	context.JSON(http.StatusOK, users)
+	context.JSON(http.StatusOK, result)
 }
