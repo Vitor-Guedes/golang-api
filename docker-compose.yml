@@ -1,0 +1,68 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: ./backend
+    container_name: go_app
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: golang_crud
+
+  # app-debug:
+  #   build:
+  #     context: ./backend
+  #   command: >
+  #     dlv exec ./cmd/api
+  #     --headless
+  #     --listen=:2345
+  #     --api-version=2
+  #     --accept-multiclient
+  #     --log
+  #   ports:
+  #     - "8080:8080"
+  #     - "2345:2345"
+  #   volumes:
+  #     - ./backend:/app
+  #   security_opt:
+  #     - seccomp:unconfined
+  #   cap_add:
+  #     - SYS_PTRACE
+  #   profiles:
+  #     - debug
+
+  db:
+    image: postgres:16
+    container_name: postgres_db
+    # restart: always
+    environment:
+      POSTGRES_DB: golang_crud
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #   container_name: react_frontend
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules
+  #   ports:
+  #     - "5173:5173"
+  #   command: npm run dev -- --host
+
+volumes:
+  postgres_data:
