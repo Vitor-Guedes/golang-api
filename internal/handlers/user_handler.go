@@ -101,8 +101,7 @@ func DeleteUser(context *gin.Context) {
 }
 
 func PaginateUser(context *gin.Context) {
-	var users []models.User
-
+	var users         []models.User
 	var searchRequest paginate.SearchRequest
 
 	// Recebe o json da requisicao. E converte o json em struct GO
